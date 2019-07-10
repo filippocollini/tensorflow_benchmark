@@ -1,0 +1,222 @@
+# Import libraries
+import argparse
+import configparser
+import os
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+from tensorflow.examples.tutorials.mnist import input_data
+
+#os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # for training on gpu
+
+
+def benchmark():
+    data = input_data.read_data_sets('input_data/mnist/', one_hot=True)
+
+    # Input placeholders
+    with tf.name_scope('input'):
+        x = tf.placeholder(tf.float32, [None, 784], name='x-input')
+        y_ = tf.placeholder(tf.int64, [None], name='y-input')
+
+    # Shapes of training set
+    print("Training set (images) shape: {shape}".format(shape=data.train.images.shape))
+    print("Training set (labels) shape: {shape}".format(shape=data.train.labels.shape))
+
+    # Shapes of test set
+    print("Test set (images) shape: {shape}".format(shape=data.test.images.shape))
+    print("Test set (labels) shape: {shape}".format(shape=data.test.labels.shape))
+
+    # Create dictionary of target classes
+    label_dict = {
+        0: 'T-shirt/top',
+        1: 'Trouser',
+        2: 'Pullover',
+        3: 'Dress',
+        4: 'Coat',
+        5: 'Sandal',
+        6: 'Shirt',
+        7: 'Sneaker',
+        8: 'Bag',
+        9: 'Ankle boot',
+    }
+
+    plt.figure(figsize=[5, 5])
+    # Display the first image in training data
+    plt.subplot(121)
+    curr_img = np.reshape(data.train.images[0], (28, 28))
+    curr_lbl = np.argmax(data.train.labels[0, :])
+    plt.imshow(curr_img, cmap='gray')
+    plt.title("(Label: " + str(label_dict[curr_lbl]) + ")")
+    # Display the first image in testing data
+    plt.subplot(122)
+    curr_img = np.reshape(data.test.images[0], (28, 28))
+    curr_lbl = np.argmax(data.test.labels[0, :])
+    plt.imshow(curr_img, cmap='gray')
+    plt.title("(Label: " + str(label_dict[curr_lbl]) + ")")
+    plt.show()
+
+    # Reshape training and testing image
+    train_X = data.train.images.reshape(-1, 28, 28, 1)
+    test_X = data.test.images.reshape(-1, 28, 28, 1)
+
+    train_y = data.train.labels
+    test_y = data.test.labels
+
+    training_iters = FLAGS.max_steps
+    learning_rate = FLAGS.learning_rate
+    batch_size = 128
+
+    # MNIST data input (img shape: 28*28)
+    n_input = 28
+
+    # MNIST total classes (0-9 digits)
+    n_classes = 10
+
+    # both placeholders are of type float
+    x = tf.placeholder("float", [None, 28, 28, 1])
+    y = tf.placeholder("float", [None, n_classes])
+
+    def conv2d(x, W, b, strides=1):
+        # Conv2D wrapper, with bias and relu activation
+        x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
+        x = tf.nn.bias_add(x, b)
+        return tf.nn.relu(x)
+
+    def maxpool2d(x, k=2):
+        return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1], padding='SAME')
+
+    weights = {
+        'wc1': tf.get_variable('W0', shape=(3, 3, 1, 32), initializer=tf.contrib.layers.xavier_initializer()),
+        'wc2': tf.get_variable('W1', shape=(3, 3, 32, 64), initializer=tf.contrib.layers.xavier_initializer()),
+        'wc3': tf.get_variable('W2', shape=(3, 3, 64, 128), initializer=tf.contrib.layers.xavier_initializer()),
+        'wd1': tf.get_variable('W3', shape=(4 * 4 * 128, 128), initializer=tf.contrib.layers.xavier_initializer()),
+        'out': tf.get_variable('W6', shape=(128, n_classes), initializer=tf.contrib.layers.xavier_initializer()),
+    }
+    biases = {
+        'bc1': tf.get_variable('B0', shape=(32), initializer=tf.contrib.layers.xavier_initializer()),
+        'bc2': tf.get_variable('B1', shape=(64), initializer=tf.contrib.layers.xavier_initializer()),
+        'bc3': tf.get_variable('B2', shape=(128), initializer=tf.contrib.layers.xavier_initializer()),
+        'bd1': tf.get_variable('B3', shape=(128), initializer=tf.contrib.layers.xavier_initializer()),
+        'out': tf.get_variable('B4', shape=(10), initializer=tf.contrib.layers.xavier_initializer()),
+    }
+
+    def conv_net(x, weights, biases):
+        # here we call the conv2d function we had defined above and pass the input image x, weights wc1 and bias bc1.
+        conv1 = conv2d(x, weights['wc1'], biases['bc1'])
+        # Max Pooling (down-sampling), this chooses the max value from a 2*2 matrix window and outputs a 14*14 matrix.
+        conv1 = maxpool2d(conv1, k=2)
+
+        # Convolution Layer
+        # here we call the conv2d function we had defined above and pass the input image x, weights wc2 and bias bc2.
+        conv2 = conv2d(conv1, weights['wc2'], biases['bc2'])
+        # Max Pooling (down-sampling), this chooses the max value from a 2*2 matrix window and outputs a 7*7 matrix.
+        conv2 = maxpool2d(conv2, k=2)
+
+        conv3 = conv2d(conv2, weights['wc3'], biases['bc3'])
+        # Max Pooling (down-sampling), this chooses the max value from a 2*2 matrix window and outputs a 4*4.
+        conv3 = maxpool2d(conv3, k=2)
+
+        # Fully connected layer
+        # Reshape conv2 output to fit fully connected layer input
+        fc1 = tf.reshape(conv3, [-1, weights['wd1'].get_shape().as_list()[0]])
+        fc1 = tf.add(tf.matmul(fc1, weights['wd1']), biases['bd1'])
+        fc1 = tf.nn.relu(fc1)
+        # Output, class prediction
+        # finally we multiply the fully connected layer with the weights and add a bias term.
+        out = tf.add(tf.matmul(fc1, weights['out']), biases['out'])
+        return out
+
+    pred = conv_net(x, weights, biases)
+
+    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
+    with tf.name_scope('train'):
+        optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate).minimize(
+            cost)
+
+    with tf.name_scope('accuracy'):
+        with tf.name_scope('correct_prediction'):
+            # Here you check whether the index of the maximum value of the predicted image is equal
+            # to the actual labelled image. and both will be a column vector.
+            correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
+        with tf.name_scope('accuracy'):
+            # calculate accuracy across all the given images and average them out.
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    tf.summary.scalar('accuracy', accuracy)
+
+    # Initializing the variables
+    init = tf.global_variables_initializer()
+
+    def feed_dict(train_flag):
+        """Make a TensorFlow feed_dict: maps data onto Tensor placeholders."""
+        if train_flag or FLAGS.fake_data:
+            xs, ys = train_X.next_batch(100, fake_data=FLAGS.fake_data), train_y.next_batch(100)
+        else:
+            xs, ys = test_X, test_y
+        return {x: xs, y_: ys}
+
+    with tf.Session() as sess:
+        sess.run(init)
+        train_writer = tf.summary.FileWriter(FLAGS.log_dir + '/train', sess.graph)
+        test_writer = tf.summary.FileWriter(FLAGS.log_dir + '/test')
+        for i in range(training_iters):
+            if i % 10 == 0:  # Record summaries and test-set accuracy
+                summary, acc = sess.run([cost, accuracy], feed_dict=feed_dict(False))
+                test_writer.add_summary(summary, i)
+                print('Accuracy at step %s: %s' % (i, acc))
+                # Record train set summaries, and train
+            if i % 100 == 99:  # Record execution stats
+                run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                run_metadata = tf.RunMetadata()
+                summary, _ = sess.run([optimizer],
+                                      feed_dict=feed_dict(True),
+                                      options=run_options,
+                                      run_metadata=run_metadata)
+                train_writer.add_run_metadata(run_metadata, 'step%03d' % i)
+                train_writer.add_summary(summary, i)
+                print('Adding run metadata for', i)
+            else:  # Record a summary
+                summary, _ = sess.run([optimizer], feed_dict=feed_dict(True))
+                train_writer.add_summary(summary, i)
+        train_writer.close()
+        test_writer.close()
+
+
+def main(_):
+    if tf.gfile.Exists(FLAGS.log_dir):
+        tf.gfile.DeleteRecursively(FLAGS.log_dir)
+    tf.gfile.MakeDirs(FLAGS.log_dir)
+    print("GPU Available:", tf.test.is_gpu_available())
+    print("Directory with logs: " + FLAGS.log_dir)
+    with tf.Graph().as_default():
+        benchmark()
+
+
+if __name__ == '__main__':
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--fake_data', nargs='?', const=True, type=bool,
+                        default=False,
+                        help='If true, uses fake data for unit testing.')
+    parser.add_argument('--max_steps', type=int, default=config['CONFIGURATION']['Training_Iterations'],
+                        help='Number of steps to run trainer.')
+    parser.add_argument('--learning_rate', type=float, default=config['CONFIGURATION']['Learning_Rate'],
+                        help='Initial learning rate')
+    parser.add_argument('--dropout', type=float, default=config['CONFIGURATION']['Dropout'],
+                        help='Keep probability for training dropout.')
+    parser.add_argument(
+        '--data_dir',
+        type=str,
+        default='input_data/',
+        help='Directory for storing input data')
+    parser.add_argument(
+        '--log_dir',
+        type=str,
+        default='logs/',
+        help='Summaries log directory')
+    parser.add_argument('--eval_iterations', type=int, default=config['CONFIGURATION']['Evaluation_Iterations'],
+                        help='Number of evaluation tests for the benchmark.')
+    FLAGS, unparsed = parser.parse_known_args()
+    tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
