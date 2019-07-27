@@ -5,14 +5,17 @@ from keras.optimizers import Adam
 from keras.models import Model
 from sklearn.model_selection import train_test_split
 from text_data_helpers import load_data
+from datetime import datetime
+from tensorflow.python.keras.callbacks import TensorBoard
 import configparser
 
+# Config file parser
 config = configparser.ConfigParser()
 config.read('config.ini')
 
+# Loading text data
 print('Loading data')
 x, y, vocabulary, vocabulary_inv = load_data()
-
 # x.shape -> (10662, 56)
 # y.shape -> (10662, 2)
 # len(vocabulary) -> 18765
@@ -20,54 +23,120 @@ x, y, vocabulary, vocabulary_inv = load_data()
 
 # Split test and train dataset (random_state is the seed used for random number generation)
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-
 # X_train.shape -> (8529, 56)
 # y_train.shape -> (8529, 2)
 # X_test.shape -> (2133, 56)
 # y_test.shape -> (2133, 2)
 
-
+# Set parameters
 sequence_length = x.shape[1]  # 56
 vocabulary_size = len(vocabulary_inv)  # 18765
 embedding_dim = 256
 filter_sizes = [3, 4, 5]
+default_filter_size = filter_sizes[2]
+pool_sizes = [2, 3, 4, 5]
 num_filters = 512
-drop = 0.5
+
+learning_rate = float(config['CONFIGURATION']['Learning_Rate'])
+dropout_value = float(config['CONFIGURATION']['Dropout'])
 
 epochs = int(config['CONFIGURATION']['Training_Iterations'])
-batch_size = int(config['CONFIGURATION']['Batch_Size'])
+batch_size = config.get('CONFIGURATION', 'Batch_Size').split()  # 1, 4, 16, 64
+batch_size = int(batch_size[3])  # 64
+hidden_layers = config.get('CONFIGURATION', 'Hidden_Layers').split()  # 4, 6, 8, 10
+hidden_layers = int(hidden_layers[0])  # <------ Change the index of hidden_layers to choose the number of layers
 
-# this returns a tensor
+
+""" Model creation """
 print("Creating Model...")
+
+# Input layers
 inputs = Input(shape=(sequence_length,), dtype='int32')
 embedding = Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length)(inputs)
 reshape = Reshape((sequence_length, embedding_dim, 1))(embedding)
+dropout = Dropout(dropout_value)(reshape)
 
-conv_0 = Conv2D(num_filters, kernel_size=(filter_sizes[0], embedding_dim), padding='valid',
-                kernel_initializer='normal', activation='relu')(reshape)
-conv_1 = Conv2D(num_filters, kernel_size=(filter_sizes[1], embedding_dim), padding='valid',
-                kernel_initializer='normal', activation='relu')(reshape)
-conv_2 = Conv2D(num_filters, kernel_size=(filter_sizes[2], embedding_dim), padding='valid',
-                kernel_initializer='normal', activation='relu')(reshape)
+# Different number of hidden layers
+if hidden_layers == 4:
+    conv_0 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
+                    kernel_initializer='normal', activation='relu')(dropout)
+    maxpool_0 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_0)
+    conv_1 = Conv2D(num_filters, kernel_size=(default_filter_size, embedding_dim-default_filter_size), padding='valid',
+                    kernel_initializer='normal', activation='relu')(maxpool_0)
+    maxpool_1 = MaxPool2D(pool_size=(sequence_length - 2*default_filter_size + 1, 1), strides=(1, 1),
+                          padding='valid')(conv_1)
+    flatten = Flatten()(maxpool_1)
+elif hidden_layers == 6:
+    conv_0 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
+                    kernel_initializer='normal', activation='relu')(dropout)
+    maxpool_0 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_0)
+    conv_1 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
+                    kernel_initializer='normal', activation='relu')(maxpool_0)
+    maxpool_1 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_1)
+    conv_2 = Conv2D(num_filters, kernel_size=(default_filter_size, embedding_dim-2*default_filter_size+1),
+                    padding='valid', kernel_initializer='normal', activation='relu')(conv_1)
+    maxpool_2 = MaxPool2D(pool_size=(sequence_length - 3*default_filter_size + 2, 1), strides=(1, 1),
+                          padding='valid')(conv_2)
+    flatten = Flatten()(maxpool_2)
+elif hidden_layers == 8:
+    conv_0 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
+                    kernel_initializer='normal', activation='relu')(dropout)
+    maxpool_0 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_0)
+    conv_1 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
+                    kernel_initializer='normal', activation='relu')(maxpool_0)
+    maxpool_1 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_1)
+    conv_2 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
+                    kernel_initializer='normal', activation='relu')(conv_1)
+    maxpool_2 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_2)
+    conv_3 = Conv2D(num_filters, kernel_size=(default_filter_size, embedding_dim-3*default_filter_size+1),
+                    padding='valid', kernel_initializer='normal', activation='relu')(maxpool_2)
+    maxpool_3 = MaxPool2D(pool_size=(sequence_length - 4*default_filter_size + 2, 1), strides=(1, 1),
+                          padding='valid')(conv_3)
+    flatten = Flatten()(maxpool_3)
+else:  # tot_layers == 10
+    conv_0 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
+                    kernel_initializer='normal', activation='relu')(dropout)
+    maxpool_0 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_0)
+    conv_1 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
+                    kernel_initializer='normal', activation='relu')(maxpool_0)
+    maxpool_1 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_1)
+    conv_2 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
+                    kernel_initializer='normal', activation='relu')(conv_1)
+    maxpool_2 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_2)
+    conv_3 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
+                    kernel_initializer='normal', activation='relu')(maxpool_2)
+    maxpool_3 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_3)
+    conv_4 = Conv2D(num_filters, kernel_size=(default_filter_size, embedding_dim-4*default_filter_size+1),
+                    padding='valid', kernel_initializer='normal', activation='relu')(maxpool_3)
+    maxpool_4 = MaxPool2D(pool_size=(sequence_length - 5*default_filter_size + 2, 1), strides=(1, 1),
+                          padding='valid')(conv_4)
+    flatten = Flatten()(maxpool_4)
 
-maxpool_0 = MaxPool2D(pool_size=(sequence_length - filter_sizes[0] + 1, 1), strides=(1, 1), padding='valid')(conv_0)
-maxpool_1 = MaxPool2D(pool_size=(sequence_length - filter_sizes[1] + 1, 1), strides=(1, 1), padding='valid')(conv_1)
-maxpool_2 = MaxPool2D(pool_size=(sequence_length - filter_sizes[2] + 1, 1), strides=(1, 1), padding='valid')(conv_2)
+# Output layer
+output = Dense(units=2, activation='softmax')(flatten)
 
-concatenated_tensor = Concatenate(axis=1)([maxpool_0, maxpool_1, maxpool_2])
-flatten = Flatten()(concatenated_tensor)
-dropout = Dropout(drop)(flatten)
-output = Dense(units=2, activation='softmax')(dropout)
+# TensorBoard for visualization
+tensorboard = TensorBoard(log_dir="./logs/{}".format(datetime.now()))
 
 # this creates a model that includes
 model = Model(inputs=inputs, outputs=output)
 
-checkpoint = ModelCheckpoint('text_trained.hdf5', monitor='val_acc', verbose=1,
-                             save_best_only=True, mode='auto')
-adam = Adam(lr=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+# printing shape of the output tensor for each layer
+print("Model structure: \n")
+print("Tensor shape: " + str(model.layers[0].input_shape))
+for layer in model.layers:
+    print("---------------------------------- Layer: " + layer.name)
+    print("Tensor shape: " + str(layer.output_shape))
+print("")
 
+model.run_eagerly = True  # Otherwise TensorBoard doesn't work
+checkpoint = ModelCheckpoint('./data/models/{}l-{}b-text_trained.hdf5'.format(hidden_layers, batch_size),
+                             monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
+adam = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['accuracy'])
-print("Training Model...")
-model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1, callbacks=[checkpoint],
-          validation_data=(X_test, y_test))  # starts training
 
+
+""" Training phase """
+print("Training Model...")
+history = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1,
+                    callbacks=[checkpoint, tensorboard], validation_data=(X_test, y_test))  # starts training
