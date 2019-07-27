@@ -4,7 +4,7 @@ from keras.callbacks import ModelCheckpoint
 from keras.optimizers import Adam
 from keras.models import Model
 from sklearn.model_selection import train_test_split
-from text_data_helpers import load_data
+from BIGA.text_data_helpers import load_data
 from datetime import datetime
 from tensorflow.python.keras.callbacks import TensorBoard
 import configparser
@@ -31,18 +31,18 @@ X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_
 # Set parameters
 sequence_length = x.shape[1]  # 56
 vocabulary_size = len(vocabulary_inv)  # 18765
-embedding_dim = 256
+embedding_dim = 64
 filter_sizes = [3, 4, 5]
 default_filter_size = filter_sizes[2]
 pool_sizes = [2, 3, 4, 5]
-num_filters = 512
+num_filters = 64
 
 learning_rate = float(config['CONFIGURATION']['Learning_Rate'])
 dropout_value = float(config['CONFIGURATION']['Dropout'])
 
 epochs = int(config['CONFIGURATION']['Training_Iterations'])
 batch_size = config.get('CONFIGURATION', 'Batch_Size').split()  # 1, 4, 16, 64
-batch_size = int(batch_size[3])  # 64
+batch_size = int(batch_size[2])  # 16
 hidden_layers = config.get('CONFIGURATION', 'Hidden_Layers').split()  # 4, 6, 8, 10
 hidden_layers = int(hidden_layers[0])  # <------ Change the index of hidden_layers to choose the number of layers
 
@@ -114,6 +114,8 @@ else:  # tot_layers == 10
 
 # Output layer
 output = Dense(units=2, activation='softmax')(flatten)
+
+dropout = Dropout(dropout_value)(reshape)
 
 # TensorBoard for visualization
 tensorboard = TensorBoard(log_dir="./logs/{}".format(datetime.now()))

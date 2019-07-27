@@ -2,7 +2,7 @@ import keras.models
 import time
 import configparser
 from sklearn.model_selection import train_test_split
-from text_data_helpers import load_data
+from BIGA.text_data_helpers import load_data
 from keras.utils import plot_model
 
 config = configparser.ConfigParser()
