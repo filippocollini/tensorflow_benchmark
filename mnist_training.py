@@ -132,7 +132,7 @@ def mnist_train():
             # Output layers
             dense1 = Dense(units=num_filters, activation='relu')(flatten)
             dropout = Dropout(dropout_value)(dense1)
-            output = Dense(units=len(y_train[0]), activation='softmax')(dense1)
+            output = Dense(units=len(y_train[0]), activation='softmax')(dropout)
 
             # TensorBoard for visualization
             tensorboard = TensorBoard(log_dir="./logs/{}".format(datetime.now()))
