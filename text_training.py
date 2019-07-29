@@ -19,7 +19,7 @@ def text_train():
     config.read('config.ini')
 
     # Loading text data
-    print('Loading data...')
+    print('Loading data...\n')
     x, y, vocabulary, vocabulary_inv = load_data()
     # x.shape -> (10662, 56)
     # y.shape -> (10662, 2)

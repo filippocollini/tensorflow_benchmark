@@ -21,7 +21,7 @@ def mnist_train():
     config.read('config.ini')
 
     # Loading Fashion MNIST data
-    print('Loading data...')
+    print('Loading data...\n')
 
     # Data paths.
     train_data_filename = './data/images/train-images-idx3-ubyte.gz'
