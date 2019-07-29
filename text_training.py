@@ -41,7 +41,7 @@ def text_train():
     default_filter_size = filter_sizes[2]
     pool_sizes = [2, 3, 4, 5]
     default_pool_size = pool_sizes[0]
-    num_filters = 128
+    num_filters = 64
 
     learning_rate = float(config['CONFIGURATION']['Learning_Rate'])
     dropout_value = float(config['CONFIGURATION']['Dropout'])
