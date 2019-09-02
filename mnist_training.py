@@ -75,8 +75,8 @@ def mnist_train():
     input_shape = (height, width, 1)
 
     """ Models creation """
-    for j in range(1, len(batch_sizes)):
-        for i in range(0, len(num_layers)):
+    for j in range(3, len(batch_sizes)):
+        for i in range(3, len(num_layers)):
 
             print("Creating Model...")
             batch_size = int(batch_sizes[j])
