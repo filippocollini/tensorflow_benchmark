@@ -82,7 +82,10 @@ def mnist_train():
     for k in range(0, len(filter_sizes)):
         for j in range(0, len(batch_sizes)):
             for i in range(0, len(num_layers)):
-                print("Creating Model...")
+                print("")
+                print("_______________________________________________________________________________________________")
+                print("")
+                print("\nCreating Model...")
                 batch_size = int(batch_sizes[j])
                 layers = int(num_layers[i])
                 conv_size = int(filter_sizes[k])
