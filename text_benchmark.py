@@ -30,51 +30,59 @@ def text_bench():
     elapsed_times = []  # Total time for all iterations
     mean_times = []  # Mean time for one iteration
 
+    filter_sizes = config.get('CONFIGURATION', 'Filter_Size').split()  # [3, 5, 8]
     batch_sizes = config.get('CONFIGURATION', 'Batch_Size').split()  # [1, 4, 16, 64]
     num_layers = config.get('CONFIGURATION', 'Tot_Layers').split()  # [4, 6, 8, 10]
 
     print("------------------------------------ TEXT BENCHMARK ------------------------------------\n")
-    for j in range(0, len(batch_sizes)):
-        for i in range(0, len(num_layers)):
+    for k in range(0, len(filter_sizes)):
+        for j in range(0, len(batch_sizes)):
+            for i in range(0, len(num_layers)):
 
-            batch_size = int(batch_sizes[j])
-            layers = int(num_layers[i])
+                conv_size = int(filter_sizes[k])
+                batch_size = int(batch_sizes[j])
+                layers = int(num_layers[i])
 
-            model = keras.models.load_model("./data/models/{layers:d}l-{batch_size:d}b-text_trained.hdf5")
-            # model = keras.models.load_model("./data/models/text_trained.hdf5")  # used for testing
+                model = keras.models.load_model("./data/models/" + str(layers) + "l-" + str(batch_size) +
+                                                "b-" + str(conv_size) + "c-text_trained.hdf5")
+                # model = keras.models.load_model("./data/models/text_trained.hdf5")  # used for testing
 
-            eval_iterations = int(config['CONFIGURATION']['Evaluation_Iterations'])
+                eval_iterations = int(config['CONFIGURATION']['Evaluation_Iterations'])
 
-            print("Model with {} layers and batch_size = {}:".format(layers, batch_size))
-            print("Evaluation starting...")
-            print("Iterations of evaluation: " + str(eval_iterations))
-            print("Inputs to predict for each iteration: " + str(len(X_test)))
-            start_time = time.time()
-            for e in range(0, eval_iterations):
-                prediction = model.predict(X_test)
-            elapsed_time = time.time() - start_time
-            mean_time = elapsed_time / eval_iterations
-            print("Total elapsed time: " + str(elapsed_time) + "s")
-            print("Prediction time: " + str(mean_time) + "s")
-            print("")
+                print("")
+                print("")
+                print("Text model with {} layers and batch_size = {}, convolution size = {}:".format(layers,
+                                                                                                     batch_size,
+                                                                                                     conv_size))
+                print("Evaluation starting...")
+                print("Iterations of evaluation: " + str(eval_iterations))
+                print("Inputs to predict for each iteration: " + str(len(X_test)))
+                start_time = time.time()
+                for e in range(0, eval_iterations):
+                    prediction = model.predict(X_test)
+                elapsed_time = time.time() - start_time
+                mean_time = elapsed_time / eval_iterations
+                print("Total elapsed time: " + str(elapsed_time) + "s")
+                print("Prediction time: " + str(mean_time) + "s")
+                print("")
 
-            elapsed_times.append(elapsed_time)
-            mean_times.append(mean_time)
+                elapsed_times.append(elapsed_time)
+                mean_times.append(mean_time)
 
-            """ Print sentences + output """
-            """
-            print("")
-            for i in range(0, len(prediction)):
-                sentence = ""
-                for j in range(0, len(X_test[i])):
-                    if vocabulary_inv[X_test[i][j]] != "<PAD/>":
-                        if j != 0:
-                            sentence += " "
-                        sentence += vocabulary_inv[X_test[i][j]]
-                print(sentence)
-                index = list(map(lambda l: l > 0.5, prediction[i])).index(True)
-                print(categories[index] + "\n")  # prints the categories
-            """
+                """ Print sentences + output """
+                """
+                print("")
+                for i in range(0, len(prediction)):
+                    sentence = ""
+                    for j in range(0, len(X_test[i])):
+                        if vocabulary_inv[X_test[i][j]] != "<PAD/>":
+                            if j != 0:
+                                sentence += " "
+                            sentence += vocabulary_inv[X_test[i][j]]
+                    print(sentence)
+                    index = list(map(lambda l: l > 0.5, prediction[i])).index(True)
+                    print(categories[index] + "\n")  # prints the categories
+                """
 
     return elapsed_times, mean_times
 

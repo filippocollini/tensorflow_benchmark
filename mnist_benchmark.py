@@ -15,7 +15,7 @@ def mnist_bench():
     X_test = extract_data(test_data_filename, 10000)
 
     # Riduce dimension of test data to 2000 samples
-    X_test = X_test[:2000, :, :]
+    X_test = X_test[:2000]
     # X_test.shape -> (2000, 28x28)
 
     # MNIST parameters
@@ -30,38 +30,46 @@ def mnist_bench():
     elapsed_times = []  # Total time for all iterations
     mean_times = []  # Mean time for one iteration
 
+    filter_sizes = config.get('CONFIGURATION', 'Filter_Size').split()  # [3, 5, 8]
     batch_sizes = config.get('CONFIGURATION', 'Batch_Size').split()  # [1, 4, 16, 64]
     num_layers = config.get('CONFIGURATION', 'Tot_Layers').split()  # [4, 6, 8, 10]
 
     print("------------------------------------ MNIST BENCHMARK ------------------------------------\n")
-    for j in range(0, len(batch_sizes)):
-        for i in range(0, len(num_layers)):
+    for k in range(0, len(filter_sizes)):
+        for j in range(0, len(batch_sizes)):
+            for i in range(0, len(num_layers)):
 
-            batch_size = int(batch_sizes[j])
-            layers = int(num_layers[i])
+                conv_size = int(filter_sizes[k])
+                batch_size = int(batch_sizes[j])
+                layers = int(num_layers[i])
 
-            model = keras.models.load_model("./data/models/{layers:d}l-{batch_size:d}b-mnist_trained.hdf5")
+                model = keras.models.load_model("./data/models/" + str(layers) + "l-" + str(batch_size) +
+                                                "b-" + str(conv_size) + "c-mnist_trained.hdf5")
 
-            eval_iterations = int(config['CONFIGURATION']['Evaluation_Iterations'])
+                eval_iterations = int(config['CONFIGURATION']['Evaluation_Iterations'])
 
-            print("Model with {} layers and batch_size = {}:".format(layers, batch_size))
-            print("Evaluation starting...")
-            print("Iterations of evaluation: " + str(eval_iterations))
-            print("Inputs to predict for each iteration: " + str(len(X_test)))
-            print("")
-            start_time = time.time()
-            for e in range(0, eval_iterations):
-                prediction = model.predict(X_test)
-            elapsed_time = time.time() - start_time
-            mean_time = elapsed_time / eval_iterations
-            print("Total elapsed time: " + str(elapsed_time) + "s")
-            print("Prediction time: " + str(mean_time) + "s")
+                print("")
+                print("")
+                print("Mnist model with {} layers and batch_size = {}, convolution size = {}:".format(layers,
+                                                                                                      batch_size,
+                                                                                                      conv_size))
+                print("Evaluation starting...")
+                print("Iterations of evaluation: " + str(eval_iterations))
+                print("Inputs to predict for each iteration: " + str(len(X_test)))
+                start_time = time.time()
+                for e in range(0, eval_iterations):
+                    prediction = model.predict(X_test)
+                elapsed_time = time.time() - start_time
+                mean_time = elapsed_time / eval_iterations
+                print("Total elapsed time: " + str(elapsed_time) + "s")
+                print("Prediction time: " + str(mean_time) + "s")
+                print("")
 
-            elapsed_times.append(elapsed_time)
-            mean_times.append(mean_time)
+                elapsed_times.append(elapsed_time)
+                mean_times.append(mean_time)
 
-            """ Print sentences + output """
-            # TODO
+                """ Print sentences + output """
+                # TODO
 
     return elapsed_times, mean_times
 
