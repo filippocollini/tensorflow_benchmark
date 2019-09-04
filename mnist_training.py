@@ -1,6 +1,8 @@
 import configparser
+import logging
 from datetime import datetime
 
+import tensorflow as tf
 from keras.callbacks import ModelCheckpoint
 from keras.layers import Flatten, Dropout
 from keras.layers import Input, Dense, Conv2D, MaxPool2D
@@ -10,6 +12,8 @@ from tensorflow.python.keras.callbacks import TensorBoard
 
 from mnist_data_helpers import extract_data
 from mnist_data_helpers import extract_labels
+
+tf.get_logger().setLevel(logging.ERROR)
 
 
 def mnist_train():
@@ -54,7 +58,6 @@ def mnist_train():
     depth = 1
 
     # Set parameters
-    embedding_dim = 256
     pool_sizes = [2, 3, 4, 5]
     default_pool_size = pool_sizes[0]
     num_filters = 64
@@ -73,7 +76,7 @@ def mnist_train():
 
     X_train = X_train.reshape(X_train.shape[0], height, width, 1)
     X_test = X_test.reshape(X_test.shape[0], height, width, 1)
-    input_shape = (height, width, 1)
+    # input_shape = (height, width, 1)
 
     """ Models creation """
     for k in range(0, len(filter_sizes)):

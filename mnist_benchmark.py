@@ -1,9 +1,14 @@
 import configparser
+import logging
 import time
 
 import keras.models
+import tensorflow as tf
 
 from mnist_data_helpers import extract_data
+from mnist_data_helpers import extract_labels
+
+tf.get_logger().setLevel(logging.ERROR)
 
 
 def mnist_bench():
@@ -12,10 +17,13 @@ def mnist_bench():
 
     print('Loading data...\n')
     test_data_filename = './data/images/t10k-images-idx3-ubyte.gz'
+    test_labels_filename = './data/images/t10k-labels-idx1-ubyte.gz'
     X_test = extract_data(test_data_filename, 10000)
+    y_test = extract_labels(test_labels_filename, 10000)
 
     # Riduce dimension of test data to 2000 samples
     X_test = X_test[:2000]
+    y_test = y_test[:2000]
     # X_test.shape -> (2000, 28x28)
 
     # MNIST parameters
@@ -34,7 +42,7 @@ def mnist_bench():
     batch_sizes = config.get('CONFIGURATION', 'Batch_Size').split()  # [1, 4, 16, 64]
     num_layers = config.get('CONFIGURATION', 'Tot_Layers').split()  # [4, 6, 8, 10]
 
-    print("------------------------------------ MNIST BENCHMARK ------------------------------------\n")
+    print("\n------------------------------------ MNIST BENCHMARK ------------------------------------\n")
     for k in range(0, len(filter_sizes)):
         for j in range(0, len(batch_sizes)):
             for i in range(0, len(num_layers)):
@@ -68,8 +76,30 @@ def mnist_bench():
                 elapsed_times.append(elapsed_time)
                 mean_times.append(mean_time)
 
-                """ Print sentences + output """
-                # TODO
+                """ Print expected category + output """
+                # categories = ["top", "trouser", "pullover", "dress", "coat",
+                # "sandal", "shirt", "sneaker", "bag", "ankle boot"]
+                """
+                print("")
+                for h in range(0, len(prediction)):
+                    actual_label = ""
+                    predicted_label = ""
+                    for l in range(0, len(y_test[i])):
+                        if y_test[h][l] == 1:
+                            actual_label = categories[l]
+                    max_inference = 0
+                    for m in range(0, len(prediction[h])):
+                        if prediction[h][m] > max_inference:
+                            max_inference = prediction[h][m]
+                            predicted_label = categories[m]
+                    if actual_label == predicted_label:
+                        result = "CORRECT"
+                    else:
+                        result = "WRONG"
+                    print(result)
+                    print("Actual: " + actual_label + " | Predicted: " + predicted_label + "\n")
+                """
+                print("_______________________________________________________________________________________________")
 
     return elapsed_times, mean_times
 
