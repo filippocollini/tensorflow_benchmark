@@ -13,6 +13,8 @@ from mnist_data_helpers import extract_labels
 
 
 def mnist_train():
+    print("------------------------------------ MNIST TRAINING ------------------------------------\n")
+
     # Params for MNIST
     validation_size = 5000  # Size of the validation set.
 
@@ -53,8 +55,6 @@ def mnist_train():
 
     # Set parameters
     embedding_dim = 256
-    filter_sizes = [3, 4, 5]
-    default_filter_size = filter_sizes[2]
     pool_sizes = [2, 3, 4, 5]
     default_pool_size = pool_sizes[0]
     num_filters = 64
@@ -63,6 +63,7 @@ def mnist_train():
     dropout_value = float(config['CONFIGURATION']['Dropout'])
 
     epochs = int(config['CONFIGURATION']['Training_Iterations'])
+    filter_sizes = config.get('CONFIGURATION', 'Filter_Size').split()  # [3, 5, 8]
     batch_sizes = config.get('CONFIGURATION', 'Batch_Size').split()  # [1, 4, 16, 64]
     num_layers = config.get('CONFIGURATION', 'Tot_Layers').split()  # [4, 6, 8, 10]
 
@@ -75,89 +76,95 @@ def mnist_train():
     input_shape = (height, width, 1)
 
     """ Models creation """
-    for j in range(3, len(batch_sizes)):
-        for i in range(3, len(num_layers)):
+    for k in range(0, len(filter_sizes)):
+        for j in range(0, len(batch_sizes)):
+            for i in range(0, len(num_layers)):
+                print("Creating Model...")
+                batch_size = int(batch_sizes[j])
+                layers = int(num_layers[i])
+                conv_size = int(filter_sizes[k])
+                print("Model with:")
+                print("    batch size: " + str(batch_size))
+                print("    number of layers: " + str(layers))
+                print("    convolution size: " + str(conv_size))
+                # Input layers
+                inputs = Input(shape=(height, width, depth,), dtype='float32')
 
-            print("Creating Model...")
-            batch_size = int(batch_sizes[j])
-            layers = int(num_layers[i])
+                # Different number of hidden layers
+                if layers == 4:  # (conv + pool + 2 * fc)
+                    conv_0 = Conv2D(num_filters, kernel_size=(conv_size, width), padding='valid',
+                                    kernel_initializer='normal', activation='relu')(inputs)
+                    maxpool_0 = MaxPool2D(pool_size=(height - conv_size + 1, 1), strides=(1, 1),
+                                          padding='valid')(conv_0)
+                    flatten = Flatten()(maxpool_0)
+                elif layers == 6:  # (2 * (conv + pool) + 2 * fc)
+                    conv_0 = Conv2D(num_filters, kernel_size=conv_size, padding='valid',
+                                    kernel_initializer='normal', activation='relu')(inputs)
+                    maxpool_0 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_0)
+                    conv_1 = Conv2D(num_filters, kernel_size=(conv_size, width - conv_size),
+                                    padding='valid', kernel_initializer='normal', activation='relu')(maxpool_0)
+                    maxpool_1 = MaxPool2D(pool_size=(height - 2 * conv_size + 1, 1), strides=(1, 1),
+                                          padding='valid')(conv_1)
+                    flatten = Flatten()(maxpool_1)
+                elif layers == 8:  # (3 * (conv + pool) + 2 * fc)
+                    conv_0 = Conv2D(num_filters, kernel_size=conv_size, padding='valid',
+                                    kernel_initializer='normal', activation='relu')(inputs)
+                    maxpool_0 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_0)
+                    conv_1 = Conv2D(num_filters, kernel_size=conv_size, padding='valid',
+                                    kernel_initializer='normal', activation='relu')(maxpool_0)
+                    maxpool_1 = MaxPool2D(pool_size=default_pool_size, strides=(1, 1), padding='valid')(conv_1)
+                    conv_2 = Conv2D(num_filters, kernel_size=(conv_size, width - 2 * conv_size),
+                                    padding='valid', kernel_initializer='normal', activation='relu')(maxpool_1)
+                    maxpool_2 = MaxPool2D(pool_size=(height - 3 * conv_size + 1, 1), strides=(1, 1),
+                                          padding='valid')(conv_2)
+                    flatten = Flatten()(maxpool_2)
+                else:  # layers == 10 (4 * (conv + pool) + 2 * fc)
+                    conv_0 = Conv2D(num_filters, kernel_size=conv_size, padding='valid',
+                                    kernel_initializer='normal', activation='relu')(inputs)
+                    maxpool_0 = MaxPool2D(pool_size=default_pool_size, strides=(1, 1), padding='valid')(conv_0)
+                    conv_1 = Conv2D(num_filters, kernel_size=conv_size, padding='valid',
+                                    kernel_initializer='normal', activation='relu')(maxpool_0)
+                    maxpool_1 = MaxPool2D(pool_size=default_pool_size, strides=(1, 1), padding='valid')(conv_1)
+                    conv_2 = Conv2D(num_filters, kernel_size=conv_size, padding='valid',
+                                    kernel_initializer='normal', activation='relu')(maxpool_1)
+                    maxpool_2 = MaxPool2D(pool_size=default_pool_size, strides=(1, 1), padding='valid')(conv_2)
+                    conv_3 = Conv2D(num_filters, kernel_size=(conv_size, width - 3 * conv_size),
+                                    padding='valid', kernel_initializer='normal', activation='relu')(maxpool_2)
+                    maxpool_3 = MaxPool2D(pool_size=(height - 4 * conv_size + 1, 1), strides=(1, 1),
+                                          padding='valid')(conv_3)
+                    flatten = Flatten()(maxpool_3)
 
-            # Input layers
-            inputs = Input(shape=(height, width, depth,), dtype='float32')
+                # Output layers
+                dense1 = Dense(units=num_filters, activation='relu')(flatten)
+                dropout = Dropout(dropout_value)(dense1)
+                output = Dense(units=len(y_train[0]), activation='softmax')(dropout)
 
-            # Different number of hidden layers
-            if layers == 4:  # (conv + pool + 2 * fc)
-                conv_0 = Conv2D(num_filters, kernel_size=(default_filter_size, width), padding='valid',
-                                kernel_initializer='normal', activation='relu')(inputs)
-                maxpool_0 = MaxPool2D(pool_size=(height - default_filter_size + 1, 1), strides=(1, 1),
-                                      padding='valid')(conv_0)
-                flatten = Flatten()(maxpool_0)
-            elif layers == 6:  # (2 * (conv + pool) + 2 * fc)
-                conv_0 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
-                                kernel_initializer='normal', activation='relu')(inputs)
-                maxpool_0 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_0)
-                conv_1 = Conv2D(num_filters, kernel_size=(default_filter_size, width - default_filter_size),
-                                padding='valid', kernel_initializer='normal', activation='relu')(maxpool_0)
-                maxpool_1 = MaxPool2D(pool_size=(height - 2 * default_filter_size + 1, 1), strides=(1, 1),
-                                      padding='valid')(conv_1)
-                flatten = Flatten()(maxpool_1)
-            elif layers == 8:  # (3 * (conv + pool) + 2 * fc)
-                conv_0 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
-                                kernel_initializer='normal', activation='relu')(inputs)
-                maxpool_0 = MaxPool2D(pool_size=pool_sizes[0], strides=(1, 1), padding='valid')(conv_0)
-                conv_1 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
-                                kernel_initializer='normal', activation='relu')(maxpool_0)
-                maxpool_1 = MaxPool2D(pool_size=default_pool_size, strides=(1, 1), padding='valid')(conv_1)
-                conv_2 = Conv2D(num_filters, kernel_size=(default_filter_size, width - 2 * default_filter_size),
-                                padding='valid', kernel_initializer='normal', activation='relu')(maxpool_1)
-                maxpool_2 = MaxPool2D(pool_size=(height - 3 * default_filter_size + 1, 1), strides=(1, 1),
-                                      padding='valid')(conv_2)
-                flatten = Flatten()(maxpool_2)
-            else:  # layers == 10 (4 * (conv + pool) + 2 * fc)
-                conv_0 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
-                                kernel_initializer='normal', activation='relu')(inputs)
-                maxpool_0 = MaxPool2D(pool_size=default_pool_size, strides=(1, 1), padding='valid')(conv_0)
-                conv_1 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
-                                kernel_initializer='normal', activation='relu')(maxpool_0)
-                maxpool_1 = MaxPool2D(pool_size=default_pool_size, strides=(1, 1), padding='valid')(conv_1)
-                conv_2 = Conv2D(num_filters, kernel_size=default_filter_size, padding='valid',
-                                kernel_initializer='normal', activation='relu')(maxpool_1)
-                maxpool_2 = MaxPool2D(pool_size=default_pool_size, strides=(1, 1), padding='valid')(conv_2)
-                conv_3 = Conv2D(num_filters, kernel_size=(default_filter_size, width - 3 * default_filter_size),
-                                padding='valid', kernel_initializer='normal', activation='relu')(maxpool_2)
-                maxpool_3 = MaxPool2D(pool_size=(height - 4 * default_filter_size + 1, 1), strides=(1, 1),
-                                      padding='valid')(conv_3)
-                flatten = Flatten()(maxpool_3)
+                # TensorBoard for visualization
+                tensorboard = TensorBoard(log_dir="./logs/{}".format(datetime.now()))
 
-            # Output layers
-            dense1 = Dense(units=num_filters, activation='relu')(flatten)
-            dropout = Dropout(dropout_value)(dense1)
-            output = Dense(units=len(y_train[0]), activation='softmax')(dropout)
+                # this creates a model that includes
+                model = Model(inputs=inputs, outputs=output)
 
-            # TensorBoard for visualization
-            tensorboard = TensorBoard(log_dir="./logs/{}".format(datetime.now()))
+                # printing shape of the output tensor for each layer
+                print("Model structure: \n")
+                print("Tensor shape: " + str(model.layers[0].input_shape))
+                for layer in model.layers:
+                    print("---------------------------------- Layer: " + layer.name)
+                    print("Tensor shape: " + str(layer.output_shape))
+                print("")
 
-            # this creates a model that includes
-            model = Model(inputs=inputs, outputs=output)
+                model.run_eagerly = True  # Otherwise TensorBoard doesn't work
+                checkpoint = ModelCheckpoint(
+                    './data/models/{}l-{}b-{}c-mnist_trained.hdf5'.format(layers, batch_size, conv_size),
+                    monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
+                adam = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+                model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['accuracy'])
 
-            # printing shape of the output tensor for each layer
-            print("Model structure: \n")
-            print("Tensor shape: " + str(model.layers[0].input_shape))
-            for layer in model.layers:
-                print("---------------------------------- Layer: " + layer.name)
-                print("Tensor shape: " + str(layer.output_shape))
-            print("")
-
-            model.run_eagerly = True  # Otherwise TensorBoard doesn't work
-            checkpoint = ModelCheckpoint('./data/models/{}l-{}b-mnist_trained.hdf5'.format(layers, batch_size),
-                                         monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
-            adam = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
-            model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['accuracy'])
-
-            """ Training phase """
-            print("Training Model...")
-            history = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1,
-                                callbacks=[checkpoint, tensorboard], validation_data=(X_test, y_test))  # starts training
+                """ Training phase """
+                print("Training Model...")
+                history = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1,
+                                    callbacks=[checkpoint, tensorboard],
+                                    validation_data=(X_test, y_test))  # starts training
 
 
 mnist_train()

@@ -1,14 +1,8 @@
-from text_training import text_train
-from mnist_training import mnist_train
+def main():
+    print("Starting training for all models...\n")
 
-print("Starting training for all models...\n")
+    print("")
+    print("Training finished.")
 
-#print("------------------------------------ TEXT TRAINING ------------------------------------\n")
-#text_train()
 
-print("")
-print("------------------------------------ MNIST TRAINING ------------------------------------\n")
-mnist_train()
-
-print("")
-print("Training finished.")
+main()
