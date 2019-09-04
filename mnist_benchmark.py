@@ -45,7 +45,7 @@ def mnist_bench():
 
                 model = keras.models.load_model("./data/models/" + str(layers) + "l-" + str(batch_size) +
                                                 "b-" + str(conv_size) + "c-mnist_trained.hdf5")
-
+                # model = keras.models.load_model("./data/models/mnist_trained.hdf5")  # used for testing
                 eval_iterations = int(config['CONFIGURATION']['Evaluation_Iterations'])
 
                 print("")
