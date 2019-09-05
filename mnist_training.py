@@ -66,7 +66,7 @@ def mnist_train():
     dropout_value = float(config['CONFIGURATION']['Dropout'])
 
     epochs = int(config['CONFIGURATION']['Training_Iterations'])
-    filter_sizes = config.get('CONFIGURATION', 'Filter_Size').split()  # [3, 5, 8]
+    filter_sizes = config.get('CONFIGURATION', 'Filter_Size').split()  # [5, 3, 8] #changed for now from 3,5,8
     batch_sizes = config.get('CONFIGURATION', 'Batch_Size').split()  # [1, 4, 16, 64]
     num_layers = config.get('CONFIGURATION', 'Tot_Layers').split()  # [4, 6, 8, 10]
 
@@ -79,7 +79,7 @@ def mnist_train():
     # input_shape = (height, width, 1)
 
     """ Models creation """
-    for k in range(0, len(filter_sizes)):
+    for k in range(1, len(filter_sizes)):
         for j in range(0, len(batch_sizes)):
             for i in range(0, len(num_layers)):
                 print("")
