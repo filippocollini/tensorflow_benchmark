@@ -1,6 +1,8 @@
 import configparser
+import logging
 from datetime import datetime
 
+import tensorflow as tf
 from keras.callbacks import ModelCheckpoint
 from keras.layers import Input, Dense, Embedding, Conv2D, MaxPool2D
 from keras.layers import Reshape, Flatten, Dropout
@@ -10,6 +12,8 @@ from sklearn.model_selection import train_test_split
 from tensorflow.python.keras.callbacks import TensorBoard
 
 from text_data_helpers import load_data
+
+tf.get_logger().setLevel(logging.ERROR)
 
 
 def text_train():
@@ -58,8 +62,10 @@ def text_train():
     for k in range(0, len(filter_sizes)):
         for j in range(0, len(batch_sizes)):
             for i in range(0, len(num_layers)):
-
-                print("Creating Model...")
+                print("")
+                print("_______________________________________________________________________________________________")
+                print("")
+                print("\nCreating Model...")
                 batch_size = int(batch_sizes[j])
                 layers = int(num_layers[i])
                 conv_size = int(filter_sizes[k])

@@ -1,17 +1,21 @@
 import configparser
+import logging
 import time
 
 import keras.models
+import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
 from text_data_helpers import load_data
+
+tf.get_logger().setLevel(logging.ERROR)
 
 
 def text_bench():
     config = configparser.ConfigParser()
     config.read('config.ini')
 
-    print('Loading data...\n')
+    print('Loading data...')
     x, y, vocabulary, vocabulary_inv = load_data()
     categories = ["negative", "positive"]
 
@@ -25,6 +29,7 @@ def text_bench():
 
     # Riduce dimension of test data to 2000 samples
     X_test = X_test[:2000]
+    y_test = y_test[:2000]
     # X_test.shape -> (2000, 56)
 
     elapsed_times = []  # Total time for all iterations
@@ -34,7 +39,7 @@ def text_bench():
     batch_sizes = config.get('CONFIGURATION', 'Batch_Size').split()  # [1, 4, 16, 64]
     num_layers = config.get('CONFIGURATION', 'Tot_Layers').split()  # [4, 6, 8, 10]
 
-    print("------------------------------------ TEXT BENCHMARK ------------------------------------\n")
+    print("\n------------------------------------ TEXT BENCHMARK ------------------------------------\n")
     for k in range(0, len(filter_sizes)):
         for j in range(0, len(batch_sizes)):
             for i in range(0, len(num_layers)):
@@ -43,9 +48,9 @@ def text_bench():
                 batch_size = int(batch_sizes[j])
                 layers = int(num_layers[i])
 
-                model = keras.models.load_model("./data/models/" + str(layers) + "l-" + str(batch_size) +
-                                                "b-" + str(conv_size) + "c-text_trained.hdf5")
-                # model = keras.models.load_model("./data/models/text_trained.hdf5")  # used for testing
+                #model = keras.models.load_model("./data/models/" + str(layers) + "l-" + str(batch_size) +
+                #                                "b-" + str(conv_size) + "c-text_trained.hdf5")
+                model = keras.models.load_model("./data/models/text_trained.hdf5")  # used for testing
 
                 eval_iterations = int(config['CONFIGURATION']['Evaluation_Iterations'])
 
@@ -72,17 +77,24 @@ def text_bench():
                 """ Print sentences + output """
                 """
                 print("")
-                for i in range(0, len(prediction)):
+                for m in range(0, len(prediction)):
                     sentence = ""
-                    for j in range(0, len(X_test[i])):
-                        if vocabulary_inv[X_test[i][j]] != "<PAD/>":
-                            if j != 0:
+                    for n in range(0, len(X_test[m])):
+                        if vocabulary_inv[X_test[m][n]] != "<PAD/>":
+                            if n != 0:
                                 sentence += " "
-                            sentence += vocabulary_inv[X_test[i][j]]
-                    print(sentence)
-                    index = list(map(lambda l: l > 0.5, prediction[i])).index(True)
-                    print(categories[index] + "\n")  # prints the categories
+                            sentence += vocabulary_inv[X_test[m][n]]
+                    act_index = list(map(lambda l: l > 0.5, y_test[m])).index(True)
+                    pred_index = list(map(lambda l: l > 0.5, prediction[m])).index(True)
+                    if pred_index == act_index:
+                        result = "CORRECT"
+                    else:
+                        result = "WRONG"
+                    print(result)
+                    print("Actual: " + categories[act_index] + " | Predicted: " + categories[pred_index])
+                    print("Review: " + sentence + "\n")
                 """
+                print("_______________________________________________________________________________________________")
 
     return elapsed_times, mean_times
 
