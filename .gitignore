@@ -1,4 +1,3 @@
 logs/*
 __pycache__/*
 data/models/big_models/*
-.idea/*
