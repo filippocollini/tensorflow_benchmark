@@ -48,7 +48,7 @@ def mnist_bench():
     models_present = True
     for i in range(0, len(num_layers)):
         for j in range(0, len(batch_sizes)):
-           for k in range(0, len(filter_sizes)):
+            for k in range(0, len(filter_sizes)):
                 conv_size = int(filter_sizes[k])
                 batch_size = int(batch_sizes[j])
                 layers = int(num_layers[i])
@@ -67,7 +67,7 @@ def mnist_bench():
     print("\n------------------------------------ MNIST BENCHMARK ------------------------------------\n")
     for i in range(0, len(num_layers)):
         for j in range(0, len(batch_sizes)):
-           for k in range(0, len(filter_sizes)):
+            for k in range(0, len(filter_sizes)):
 
                 conv_size = int(filter_sizes[k])
                 batch_size = int(batch_sizes[j])
@@ -81,8 +81,8 @@ def mnist_bench():
                 print("")
                 print("")
                 print("Mnist model with {} layers, batch_size = {} and convolution size = {}".format(layers,
-                                                                                                      batch_size,
-                                                                                                      conv_size))
+                                                                                                     batch_size,
+                                                                                                     conv_size))
                 print("Evaluation starting...")
                 print("Iterations of evaluation: " + str(eval_iterations))
                 print("Inputs to predict for each iteration: " + str(len(X_test)))

@@ -45,7 +45,7 @@ def text_bench():
     models_present = True
     for i in range(0, len(num_layers)):
         for j in range(0, len(batch_sizes)):
-           for k in range(0, len(filter_sizes)):
+            for k in range(0, len(filter_sizes)):
                 conv_size = int(filter_sizes[k])
                 batch_size = int(batch_sizes[j])
                 layers = int(num_layers[i])
@@ -64,7 +64,7 @@ def text_bench():
     print("\n------------------------------------ TEXT BENCHMARK ------------------------------------\n")
     for i in range(0, len(num_layers)):
         for j in range(0, len(batch_sizes)):
-           for k in range(0, len(filter_sizes)):
+            for k in range(0, len(filter_sizes)):
 
                 conv_size = int(filter_sizes[k])
                 batch_size = int(batch_sizes[j])
