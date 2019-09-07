@@ -1,4 +1,4 @@
-# CNN Benchmark using two different dataset
+# CNN Benchmark using two different dataset (Text classification and Fashion MNIST classification)
 Authors: Roberto Bigazzi, Filippo Collini
 
 Code we borrowed and tutorials we used:
