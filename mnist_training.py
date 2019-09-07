@@ -84,8 +84,8 @@ def mnist_train():
             for k in range(0, len(filter_sizes)):
                 # TODO remove these three lines once training complete
                 epochs = 5
-                if (i==3 or i ==4):
-                    epochs = 2
+                if i == 2 or i == 3:
+                    epochs = 3
                 print("")
                 print("_______________________________________________________________________________________________")
                 print("")
