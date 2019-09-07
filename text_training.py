@@ -59,9 +59,15 @@ def text_train():
     # num_layers = [4]
 
     """ Models creation """
-    for k in range(0, len(filter_sizes)):
+    for i in range(0, len(num_layers)):
         for j in range(0, len(batch_sizes)):
-            for i in range(0, len(num_layers)):
+            for k in range(0, len(filter_sizes)):
+                if (i==0 or i==1) and j==0:
+                    break
+                # TODO remove these three lines once training complete
+                epochs = 5
+                if (i==3 or i ==4):
+                    epochs = 2
                 print("")
                 print("_______________________________________________________________________________________________")
                 print("")

@@ -1,5 +1,6 @@
 import configparser
 import logging
+import pathlib
 import time
 
 import keras.models
@@ -39,10 +40,31 @@ def text_bench():
     batch_sizes = config.get('CONFIGURATION', 'Batch_Size').split()  # [1, 4, 16, 64]
     num_layers = config.get('CONFIGURATION', 'Tot_Layers').split()  # [4, 6, 8, 10]
 
-    print("\n------------------------------------ TEXT BENCHMARK ------------------------------------\n")
-    for k in range(0, len(filter_sizes)):
+    """ Models presence check """
+    print("\nChecking models presence...")
+    models_present = True
+    for i in range(0, len(num_layers)):
         for j in range(0, len(batch_sizes)):
-            for i in range(0, len(num_layers)):
+           for k in range(0, len(filter_sizes)):
+                conv_size = int(filter_sizes[k])
+                batch_size = int(batch_sizes[j])
+                layers = int(num_layers[i])
+                path = pathlib.Path("./data/models/" + str(layers) + "l-" + str(batch_size) +
+                                    "b-" + str(conv_size) + "c-text_trained.hdf5")
+                if not path.exists():
+                    print("You need to train a Text model with {} layers, batch_size = {} and convolution size = {}"
+                          .format(layers,
+                                  batch_size,
+                                  conv_size))
+                    models_present = False
+    if not models_present:
+        print("\nTrain the models above before performing Text benchmark")
+        exit()
+
+    print("\n------------------------------------ TEXT BENCHMARK ------------------------------------\n")
+    for i in range(0, len(num_layers)):
+        for j in range(0, len(batch_sizes)):
+           for k in range(0, len(filter_sizes)):
 
                 conv_size = int(filter_sizes[k])
                 batch_size = int(batch_sizes[j])
@@ -56,9 +78,9 @@ def text_bench():
 
                 print("")
                 print("")
-                print("Text model with {} layers and batch_size = {}, convolution size = {}:".format(layers,
-                                                                                                     batch_size,
-                                                                                                     conv_size))
+                print("Text model with {} layers, batch_size = {} and convolution size = {}".format(layers,
+                                                                                                    batch_size,
+                                                                                                    conv_size))
                 print("Evaluation starting...")
                 print("Iterations of evaluation: " + str(eval_iterations))
                 print("Inputs to predict for each iteration: " + str(len(X_test)))
