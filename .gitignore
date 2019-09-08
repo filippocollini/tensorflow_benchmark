@@ -13,3 +13,11 @@ data/models/10l-1b-8c-text_trained.hdf5
 data/models/10l-4b-8c-text_trained.hdf5
 data/models/10l-16b-8c-text_trained.hdf5
 data/models/10l-64b-8c-text_trained.hdf5
+data/models/10l-1b-5c-text_trained.hdf5
+data/models/10l-4b-5c-text_trained.hdf5
+data/models/6l-1b-5c-text_trained.hdf5
+data/models/6l-4b-5c-text_trained.hdf5
+data/models/6l-16b-5c-text_trained.hdf5
+data/models/8l-1b-5c-text_trained.hdf5
+data/models/8l-4b-5c-text_trained.hdf5
+
