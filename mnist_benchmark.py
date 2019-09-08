@@ -37,9 +37,6 @@ def mnist_bench():
 
     categories = ["top", "trouser", "pullover", "dress", "coat", "sandal", "shirt", "sneaker", "bag", "ankle boot"]
 
-    bench_log = "benchmarks/mnist-{}.txt".format(datetime.now())
-    file = open(bench_log, "w")
-
     elapsed_times = []  # Total time for all iterations
     mean_times = []  # Mean time for one iteration
 
@@ -67,6 +64,9 @@ def mnist_bench():
     if not models_present:
         print("\nTrain the models above before performing Mnist benchmark")
         exit()
+
+    bench_log = "benchmarks/mnist-{}.txt".format(datetime.now())
+    file = open(bench_log, "w")
 
     print("\n------------------------------------ MNIST BENCHMARK ------------------------------------\n")
     for i in range(0, len(num_layers)):

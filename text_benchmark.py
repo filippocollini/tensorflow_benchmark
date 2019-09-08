@@ -34,9 +34,6 @@ def text_bench():
     y_test = y_test[:2000]
     # X_test.shape -> (2000, 56)
 
-    bench_log = "benchmarks/text-{}.txt".format(datetime.now())
-    file = open(bench_log, "w")
-
     elapsed_times = []  # Total time for all iterations
     mean_times = []  # Mean time for one iteration
 
@@ -64,6 +61,9 @@ def text_bench():
     if not models_present:
         print("\nTrain the models above before performing Text benchmark")
         exit()
+
+    bench_log = "benchmarks/text-{}.txt".format(datetime.now())
+    file = open(bench_log, "w")
 
     print("\n------------------------------------ TEXT BENCHMARK ------------------------------------\n")
     for i in range(0, len(num_layers)):
