@@ -2,6 +2,7 @@ import configparser
 import logging
 import pathlib
 import time
+from datetime import datetime
 
 import keras.models
 import tensorflow as tf
@@ -35,6 +36,9 @@ def mnist_bench():
     X_test = X_test.reshape(X_test.shape[0], height, width, 1)
 
     categories = ["top", "trouser", "pullover", "dress", "coat", "sandal", "shirt", "sneaker", "bag", "ankle boot"]
+
+    bench_log = "benchmarks/mnist-{}.txt".format(datetime.now())
+    file = open(bench_log, "w")
 
     elapsed_times = []  # Total time for all iterations
     mean_times = []  # Mean time for one iteration
@@ -98,6 +102,10 @@ def mnist_bench():
                 elapsed_times.append(elapsed_time)
                 mean_times.append(mean_time)
 
+                file.write("[Layers: " + str(layers) + ", batch size: " + str(batch_size) + ", conv size: " +
+                           str(conv_size) + "]" + " Total time: " + str(elapsed_time) + ", Mean time: " +
+                           str(mean_time) + ";\n")
+
                 """ Print expected category + output """
                 # categories = ["top", "trouser", "pullover", "dress", "coat",
                 # "sandal", "shirt", "sneaker", "bag", "ankle boot"]
@@ -122,6 +130,9 @@ def mnist_bench():
                     print("Actual: " + actual_label + " | Predicted: " + predicted_label + "\n")
                 """
                 print("_______________________________________________________________________________________________")
+
+    file.close()
+    print("Benchmark data saved in folder /benchmarks.")
 
     return elapsed_times, mean_times
 

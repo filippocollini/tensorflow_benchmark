@@ -1,0 +1,11 @@
+[Layers: 4, batch size: 1, conv size: 3] Total time: 1.8607017993927002, Mean time: 0.037214035987854006;
+[Layers: 4, batch size: 1, conv size: 5] Total time: 2.0385212898254395, Mean time: 0.04077042579650879;
+[Layers: 4, batch size: 1, conv size: 8] Total time: 2.211496353149414, Mean time: 0.044229927062988283;
+[Layers: 4, batch size: 4, conv size: 3] Total time: 2.1641807556152344, Mean time: 0.04328361511230469;
+[Layers: 4, batch size: 4, conv size: 5] Total time: 2.265435218811035, Mean time: 0.045308704376220706;
+[Layers: 4, batch size: 4, conv size: 8] Total time: 2.361544132232666, Mean time: 0.04723088264465332;
+[Layers: 4, batch size: 16, conv size: 3] Total time: 2.347337245941162, Mean time: 0.046946744918823245;
+[Layers: 4, batch size: 16, conv size: 5] Total time: 2.455700159072876, Mean time: 0.04911400318145752;
+[Layers: 4, batch size: 16, conv size: 8] Total time: 2.5326786041259766, Mean time: 0.050653572082519534;
+[Layers: 4, batch size: 64, conv size: 3] Total time: 2.4436445236206055, Mean time: 0.04887289047241211;
+[Layers: 4, batch size: 64, conv size: 5] Total time: 2.608379364013672, Mean time: 0.05216758728027344;

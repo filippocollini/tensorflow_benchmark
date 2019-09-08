@@ -2,6 +2,7 @@ import configparser
 import logging
 import pathlib
 import time
+from datetime import datetime
 
 import keras.models
 import tensorflow as tf
@@ -32,6 +33,9 @@ def text_bench():
     X_test = X_test[:2000]
     y_test = y_test[:2000]
     # X_test.shape -> (2000, 56)
+
+    bench_log = "benchmarks/text-{}.txt".format(datetime.now())
+    file = open(bench_log, "w")
 
     elapsed_times = []  # Total time for all iterations
     mean_times = []  # Mean time for one iteration
@@ -96,6 +100,10 @@ def text_bench():
                 elapsed_times.append(elapsed_time)
                 mean_times.append(mean_time)
 
+                file.write("[Layers: " + str(layers) + ", batch size: " + str(batch_size) + ", conv size: " +
+                           str(conv_size) + "]" + " Total time: " + str(elapsed_time) + ", Mean time: " +
+                           str(mean_time) + ";\n")
+
                 """ Print sentences + output """
                 """
                 print("")
@@ -117,6 +125,9 @@ def text_bench():
                     print("Review: " + sentence + "\n")
                 """
                 print("_______________________________________________________________________________________________")
+
+    file.close()
+    print("Benchmark data saved in folder /benchmarks.")
 
     return elapsed_times, mean_times
 
