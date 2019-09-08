@@ -82,10 +82,6 @@ def mnist_train():
     for i in range(0, len(num_layers)):
         for j in range(0, len(batch_sizes)):
             for k in range(0, len(filter_sizes)):
-                # TODO remove these three lines once training complete
-                epochs = 5
-                if i == 2 or i == 3:
-                    epochs = 3
                 print("")
                 print("_______________________________________________________________________________________________")
                 print("")
@@ -138,10 +134,16 @@ def mnist_train():
                     conv_2 = Conv2D(num_filters, kernel_size=conv_size, padding='valid',
                                     kernel_initializer='normal', activation='relu')(maxpool_1)
                     maxpool_2 = MaxPool2D(pool_size=default_pool_size, strides=(1, 1), padding='valid')(conv_2)
-                    conv_3 = Conv2D(num_filters, kernel_size=(conv_size, width - 3 * conv_size),
-                                    padding='valid', kernel_initializer='normal', activation='relu')(maxpool_2)
-                    maxpool_3 = MaxPool2D(pool_size=(height - 4 * conv_size + 1, 1), strides=(1, 1),
-                                          padding='valid')(conv_3)
+                    if conv_size*4 > width:
+                        conv_3 = Conv2D(num_filters, kernel_size=(width - conv_size * 3),
+                                        padding='valid', kernel_initializer='normal', activation='relu')(maxpool_2)
+                        maxpool_3 = MaxPool2D(pool_size=(height - 3 * conv_size - (width - conv_size * 3) + 1, 1),
+                                              strides=(1, 1), padding='valid')(conv_3)
+                    else:
+                        conv_3 = Conv2D(num_filters, kernel_size=(conv_size, width - 3 * conv_size),
+                                        padding='valid', kernel_initializer='normal', activation='relu')(maxpool_2)
+                        maxpool_3 = MaxPool2D(pool_size=(height - 4 * conv_size + 1, 1), strides=(1, 1),
+                                              padding='valid')(conv_3)
                     flatten = Flatten()(maxpool_3)
 
                 # Output layers
