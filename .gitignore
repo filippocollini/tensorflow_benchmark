@@ -28,4 +28,6 @@ data/models/10l-64b-8c-text_trained.hdf5
 data/models/10l-64b-5c-text_trained.hdf5
 data/models/8l-64b-5c-text_trained.hdf5
 data/models/6l-64b-5c-text_trained.hdf5
+data/models/8l-16b-5c-text_trained.hdf5
+data/models/10l-16b-5c-text_trained.hdf5
 
