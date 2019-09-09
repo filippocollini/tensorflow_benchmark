@@ -64,6 +64,7 @@ def text_bench():
 
     bench_log = "benchmarks/text-{}.txt".format(datetime.now())
     file = open(bench_log, "w")
+    file.write("Layers,BatchSize,ConvSize,TotalTime,MeanTime\n")
 
     print("\n------------------------------------ TEXT BENCHMARK ------------------------------------\n")
     for i in range(0, len(num_layers)):
@@ -100,9 +101,9 @@ def text_bench():
                 elapsed_times.append(elapsed_time)
                 mean_times.append(mean_time)
 
-                file.write("[Layers: " + str(layers) + ", batch size: " + str(batch_size) + ", conv size: " +
-                           str(conv_size) + "]" + " Total time: " + str(elapsed_time) + ", Mean time: " +
-                           str(mean_time) + ";\n")
+                file.write(str(layers) + "," + str(batch_size) + "," +
+                           str(conv_size) + "," + str(elapsed_time) + "," +
+                           str(mean_time) + "\n")
 
                 """ Print sentences + output """
                 """
