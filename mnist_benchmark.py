@@ -65,7 +65,7 @@ def mnist_bench():
         print("\nTrain the models above before performing Mnist benchmark")
         exit()
 
-    bench_log = "benchmarks/mnist-{}.txt".format(datetime.now())
+    bench_log = "benchmarks/mnist-{}.csv".format(datetime.now())
     file = open(bench_log, "w")
     file.write("Layers,BatchSize,ConvSize,TotalTime,MeanTime\n")
 
@@ -110,7 +110,7 @@ def mnist_bench():
                 """ Print expected category + output """
                 # categories = ["top", "trouser", "pullover", "dress", "coat",
                 # "sandal", "shirt", "sneaker", "bag", "ankle boot"]
-
+                """
                 print("")
                 for h in range(0, len(prediction)):
                     actual_label = ""
@@ -129,7 +129,7 @@ def mnist_bench():
                         result = "WRONG"
                     print(result)
                     print("Actual: " + actual_label + " | Predicted: " + predicted_label + "\n")
-
+                """
                 print("_______________________________________________________________________________________________")
 
     file.close()
