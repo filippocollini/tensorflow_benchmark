@@ -106,7 +106,7 @@ def text_bench():
                            str(mean_time) + "\n")
 
                 """ Print sentences + output """
-                """
+
                 print("")
                 for m in range(0, len(prediction)):
                     sentence = ""
@@ -124,7 +124,7 @@ def text_bench():
                     print(result)
                     print("Actual: " + categories[act_index] + " | Predicted: " + categories[pred_index])
                     print("Review: " + sentence + "\n")
-                """
+
                 print("_______________________________________________________________________________________________")
 
     file.close()
