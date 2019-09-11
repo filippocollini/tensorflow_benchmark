@@ -62,7 +62,7 @@ def text_bench():
         print("\nTrain the models above before performing Text benchmark")
         exit()
 
-    bench_log = "benchmarks/text-{}.txt".format(datetime.now())
+    bench_log = "benchmarks/text-{}.csv".format(datetime.now())
     file = open(bench_log, "w")
     file.write("Layers,BatchSize,ConvSize,TotalTime,MeanTime\n")
 
@@ -106,7 +106,7 @@ def text_bench():
                            str(mean_time) + "\n")
 
                 """ Print sentences + output """
-
+                """
                 print("")
                 for m in range(0, len(prediction)):
                     sentence = ""
@@ -124,7 +124,7 @@ def text_bench():
                     print(result)
                     print("Actual: " + categories[act_index] + " | Predicted: " + categories[pred_index])
                     print("Review: " + sentence + "\n")
-
+                """
                 print("_______________________________________________________________________________________________")
 
     file.close()
