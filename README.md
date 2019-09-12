@@ -3,7 +3,7 @@
 
 Authors: Roberto Bigazzi, Filippo Collini
 
-Every info about the project is inside Presentation/ACA - Project P17.pdf.
+Every info about the project and analysis of the results is inside Presentation/ACA - Project P17.pdf.
 Cloning the project you need to retrain some models (running the benchmark files will tell you which models are missing) because those models violate the 100MB file size limitation of Github.
 
 Code we borrowed and tutorials we used:
