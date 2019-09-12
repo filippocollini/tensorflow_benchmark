@@ -1,4 +1,4 @@
-# CNN Benchmark using two different dataset 
+# CNN Benchmark using two different dataset with Tensorflow
 ***(Text classification and Fashion MNIST classification)***
 
 Authors: Roberto Bigazzi, Filippo Collini
